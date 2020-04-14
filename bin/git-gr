@@ -10,13 +10,16 @@ function get_reviewers() {
         reviewers_file_path=$curdir/$reviewers_file
         if [ -e $reviewers_file_path ]; then
             for i in `cat $reviewers_file_path`; do
+                if [ "${i:0:1}" = "#" ]; then
+                    continue
+                fi
                 res="${res}r=$i,"
             done
         fi
         curdir=$(dirname $curdir)
     done
 
-    echo "${res:0:-1}"
+    echo "${res:0:$((${#res} - 1))}"
 }
 
 SCRIPT_NAME=$(basename $0)

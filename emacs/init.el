@@ -7,6 +7,12 @@
                 (add-to-list 'load-path entry)))
           entries))
 
+;;;; el-get
+(if (file-exists-p "~/.emacs.d/el-get/el-get")
+    (add-to-list 'load-path "~/.emacs.d/el-get/el-get"))
+
+(require 'el-get nil t)
+
 ;; to run multiple emacs daemons on a single system
 (setq server-use-tcp t)
 
@@ -16,6 +22,13 @@
     "Execute BODY; if an error occurs, return nil.
 Otherwise, return result of last form in BODY."
     `(condition-case nil (progn ,@body) (error nil))))
+
+(if (not (fboundp 'with-eval-after-load))
+    (defmacro with-eval-after-load (feature &rest body)
+      "After FEATURE is loaded, evaluate BODY."
+      (declare (indent defun))
+      `(eval-after-load ,feature
+         '(progn ,@body))))
 
 ;;;; tab
 (setq c-basic-offset 4)
@@ -69,30 +82,55 @@ Otherwise, return result of last form in BODY."
                              '("\\.[mM][pP]4$" "mplayer")
                              '("\\.[pP][dD][fF]$" "evince")
                              '("\\.[wW][mM][vV]$" "mplayer"))))))
+(ignore-errors
+  (load-library "dired"))
 
 ;;;; find-dired
-(eval-after-load "find-dired"
-  '(setq find-ls-option '("-exec ls -ldh {} +". "")))
+(with-eval-after-load "find-dired"
+  (setq find-ls-option '("-exec ls -ldh {} +". "")))
 
 ;;;; uniquify
-(eval-after-load "uniquify"
-  '(setq uniquify-buffer-name-style 'forward))
+(with-eval-after-load "uniquify"
+  (setq uniquify-buffer-name-style 'forward))
 
 ;;;; auto-complete
-(eval-after-load "auto-complete"
-  '(progn
-     (add-to-list 'ac-modes 'jde-mode)
-     (add-to-list 'ac-modes 'objc-mode)
-     (global-auto-complete-mode t)))
+(with-eval-after-load "auto-complete"
+  (add-to-list 'ac-modes 'jde-mode)
+  (add-to-list 'ac-modes 'objc-mode)
+  (global-auto-complete-mode t))
 
 ;;;; auto-complete-yasnippet
-(eval-after-load "auto-complete-yasnippet"
-  '(progn
-     (setq-default ac-sources
-                   '(ac-source-yasnippet
-                     ac-source-abbrev
-                     ac-source-dictionary
-                     ac-source-words-in-same-mode-buffers))))
+(with-eval-after-load "auto-complete-yasnippet"
+  (setq-default ac-sources
+                '(ac-source-yasnippet
+                  ac-source-abbrev
+                  ac-source-dictionary
+                  ac-source-words-in-same-mode-buffers)))
+;;;; helm
+(defun helm-grep-do-git-grep-prompt (arg)
+  (interactive "P")
+  (require 'helm-files)
+  (helm-grep-git-1 (helm-advice--ffap-read-file-or-url "Helm git grep dir: "
+                                                       default-directory)
+                   arg))
+
+(with-eval-after-load "helm"
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-set-key (kbd "C-c h g") 'helm-grep-do-git-grep-prompt)
+  (global-set-key (kbd "C-c h G") 'helm-grep-do-git-grep)
+  (global-set-key (kbd "C-c o") 'helm-occur)
+  (global-set-key (kbd "C-x b") 'helm-buffers-list)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+  (global-set-key (kbd "M-x") 'helm-M-x))
+
+;;;; helm-company
+(ignore-errors
+  (el-get-init "helm-company")
+  (load-library "helm-company")
+  (with-eval-after-load "company"
+    (define-key company-mode-map (kbd "C-c .") 'helm-company)
+    (define-key company-active-map (kbd "C-c .") 'helm-company)))
 
 (ignore-errors
   (require 'auto-complete))
@@ -102,8 +140,8 @@ Otherwise, return result of last form in BODY."
   (require 'dropdown-list))
 
 ;;;; switch-window
-(eval-after-load "switch-window"
-  '(global-set-key (kbd "C-x o") 'switch-window))
+(with-eval-after-load "switch-window"
+  (global-set-key (kbd "C-x o") 'switch-window))
 
 (ignore-errors
   (el-get-init 'switch-window))
@@ -198,24 +236,24 @@ Otherwise, return result of last form in BODY."
 
 
 ;;;; jde and jdibug
-(eval-after-load "jde"
-  '(ignore-errors
-     (global-set-key [f5] 'jde-debug-step-into)
-     (global-set-key [f6] 'jde-debug-step-over)
-     (global-set-key [f7] 'jde-debug-step-out)
-     (global-set-key [f8] 'jde-debug-cont)
-     (global-set-key (kbd "M-+") 'jde-debug-up)
-     (global-set-key (kbd "M-_") 'jde-debug-down)
-     (require 'jdibug)
-     (global-set-key [f5] 'jdibug-step-into)
-     (global-set-key [f6] 'jdibug-step-over)
-     (global-set-key [f7] 'jdibug-step-out)
-     (global-set-key [f8] 'jdibug-resume)))
+(with-eval-after-load "jde"
+  (ignore-errors
+    (global-set-key [f5] 'jde-debug-step-into)
+    (global-set-key [f6] 'jde-debug-step-over)
+    (global-set-key [f7] 'jde-debug-step-out)
+    (global-set-key [f8] 'jde-debug-cont)
+    (global-set-key (kbd "M-+") 'jde-debug-up)
+    (global-set-key (kbd "M-_") 'jde-debug-down)
+    (require 'jdibug)
+    (global-set-key [f5] 'jdibug-step-into)
+    (global-set-key [f6] 'jdibug-step-over)
+    (global-set-key [f7] 'jdibug-step-out)
+    (global-set-key [f8] 'jdibug-resume)))
 
 ;;;; gdb-bp-session
-(eval-after-load "gud"
-  '(ignore-errors
-     (require 'gdb-bp-session)))
+(with-eval-after-load "gud"
+  (ignore-errors
+    (require 'gdb-bp-session)))
 
 ;;;; hs-minor-mode
 (add-hook 'hs-minor-mode-hook
@@ -407,18 +445,29 @@ Otherwise, return result of last form in BODY."
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 
-(eval-after-load "highlight-sexp"
-  '(progn
-     (setq hl-sexp-background-color (if window-system
-                                        "#00008b"
-                                      "#ffffd7"))
-     (add-hook 'lisp-mode-hook 'highlight-sexp-mode)
-     (add-hook 'emacs-lisp-mode-hook 'highlight-sexp-mode)))
+;;;; paredit
+(with-eval-after-load "paredit"
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook
+            (lambda ()
+              (enable-paredit-mode)
+              (local-set-key (kbd "C-c RET") 'eval-print-last-sexp)
+              (local-set-key (kbd "C-c e") 'eval-print-last-sexp)))
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode))
 
-(eval-after-load "c-eldoc"
-  '(progn
-     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
-     (add-hook 'c++-mode-hook 'c-turn-on-eldoc-mode)))
+(with-eval-after-load "highlight-sexp"
+  (setq hl-sexp-background-color (if window-system
+                                     "#00008b"
+                                   "#ffffd7"))
+  (add-hook 'lisp-mode-hook 'highlight-sexp-mode)
+  (add-hook 'emacs-lisp-mode-hook 'highlight-sexp-mode))
+
+(with-eval-after-load "c-eldoc"
+  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+  (add-hook 'c++-mode-hook 'c-turn-on-eldoc-mode))
 
 (add-hook 'objc-mode-hook
           (lambda ()
@@ -460,12 +509,11 @@ Otherwise, return result of last form in BODY."
     (require 'autostart)))
 
 ;;;; geben
-(eval-after-load "geben"
-  '(progn
-     (define-key geben-mode-map [f5] 'geben-step-into)
-     (define-key geben-mode-map [f6] 'geben-step-over)
-     (define-key geben-mode-map [f7] 'geben-step-out)
-     (define-key geben-mode-map [f8] 'geben-run)))
+(with-eval-after-load "geben"
+  (define-key geben-mode-map [f5] 'geben-step-into)
+  (define-key geben-mode-map [f6] 'geben-step-over)
+  (define-key geben-mode-map [f7] 'geben-step-out)
+  (define-key geben-mode-map [f8] 'geben-run))
 
 (autoload 'geben "geben" "DBGp protocol front-end" t)
 
@@ -500,26 +548,25 @@ Otherwise, return result of last form in BODY."
     (kill-buffer "*which-gem-package*")
     path))
 
-(eval-after-load "ruby-mode"
-  '(progn
-     (ignore-errors
-       (setq ri-ruby-script
-             (locate-library "ri-emacs"))
-       (load-library "ri-ruby")
-       (add-hook 'ruby-mode-hook
-                 (lambda()
-                   (local-set-key (kbd "C-c h") 'ri)
-                   (local-set-key (kbd "C-c @") 'ri-ruby-show-args))))
-     (ignore-errors
-       (let ((rcodetools-path (which-gem-package "rcodetools")))
-         (cond ((not (null rcodetools-path))
-                (add-to-list 'load-path rcodetools-path)
-                (require 'anything-rcodetools)
-                (define-key ruby-mode-map (kbd "C-c /") 'rct-complete-symbol)))))
-     (ignore-errors
-       (require 'inf-ruby)
-       (require 'ruby-electric)
-       (require 'rdebug))))
+(with-eval-after-load "ruby-mode"
+  (ignore-errors
+    (setq ri-ruby-script
+          (locate-library "ri-emacs"))
+    (load-library "ri-ruby")
+    (add-hook 'ruby-mode-hook
+              (lambda()
+                (local-set-key (kbd "C-c h") 'ri)
+                (local-set-key (kbd "C-c @") 'ri-ruby-show-args))))
+  (ignore-errors
+    (let ((rcodetools-path (which-gem-package "rcodetools")))
+      (cond ((not (null rcodetools-path))
+             (add-to-list 'load-path rcodetools-path)
+             (require 'anything-rcodetools)
+             (define-key ruby-mode-map (kbd "C-c /") 'rct-complete-symbol)))))
+  (ignore-errors
+    (require 'inf-ruby)
+    (require 'ruby-electric)
+    (require 'rdebug)))
 
 (autoload 'ruby-mode "ruby-mode" nil t)
 (autoload 'rdebug "rdebug" nil t)
@@ -546,8 +593,8 @@ Otherwise, return result of last form in BODY."
 (autoload 'rinari-activate "rinari" nil t)
 
 ;;;; xcode-document-viewer
-(eval-after-load "xcode-document-viewer"
-  '(setq xcdoc:document-path "/Developer/Platforms/iPhoneOS.platform/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiPhone4_0.iPhoneLibrary.docset"))
+(with-eval-after-load "xcode-document-viewer"
+  (setq xcdoc:document-path "/Developer/Platforms/iPhoneOS.platform/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiPhone4_0.iPhoneLibrary.docset"))
 
 (autoload 'xcdoc:set-document-path "xcode-document-viewer" nil t)
 (autoload 'xcdoc:search "xcode-document-viewer" nil t)
@@ -752,20 +799,37 @@ finished."
       "#python"
       "#ruby")
      ("freenode.net"
+      "##c++"
+      "##c++general"
+      "##gnome"
+      "##java"
+      "##lisp"
+      "##programming"
       "#android"
       "#android-dev"
-      "##gnome"
-      "#ubuntu"
-      "#lisp"
-      "#scheme"
-      "#haskell"
-      "##c++"
-      "#perl"
-      "#ruby"
+      "#clim"
+      "#clschool"
+      "#debian"
+      "#ecl"
       "#eclipse"
       "#emacs"
+      "#haskell"
+      "#linux"
+      "#lisp"
+      "#lispcafe"
+      "#lispgames"
+      "#lispweb"
+      "#llvm"
+      "#mezzano"
+      "#perl"
       "#python"
-      "##java")))
+      "#ruby"
+      "#sbcl"
+      "#scheme"
+      "#shirakumo"
+      "#sicl"
+      "#slime"
+      "#ubuntu")))
  ;; for hanirc.org
  '(erc-server-coding-system (quote (cp949 . undecided))))
 
@@ -777,7 +841,7 @@ finished."
       erc-prompt-for-password t)
 
 (setq erc-server "irc.freenode.net"
-      erc-port 6667
+      erc-port 8000
       erc-nick "jjong"
       erc-password nil
       erc-prompt-for-password t)
@@ -830,12 +894,6 @@ finished."
              (kill-buffer (current-buffer)))))
         (t
          (message "ELPA is already installed."))))
-
-;;;; el-get
-(if (file-exists-p "~/.emacs.d/el-get/el-get")
-    (add-to-list 'load-path "~/.emacs.d/el-get/el-get"))
-
-(require 'el-get nil t)
 
 ;;;; magit
 (ignore-errors

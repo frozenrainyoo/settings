@@ -1,8 +1,9 @@
 ;; ======================================================================
 ;; Custom variables and faces
 ;; ======================================================================
-(defvar default-font-spec-eng-list '((font-spec :family "Andale Mono" :size 9.0)
+(defvar default-font-spec-eng-list '((font-spec :family "envypn" :size 9.0)
                                      (font-spec :family "Ubuntu Mono" :size 9.0)
+                                     (font-spec :family "Andale Mono" :size 9.0)
                                      (font-spec :family "NanumGothic_AndaleMono" :size 9.0)
                                      (font-spec :family "Liberation Mono" :size 9.0)
                                      (font-spec :family "Monospace" :size 9.0)))
@@ -12,8 +13,8 @@
                                      (font-spec :family "UnBatang" :size 9.0)
                                      (font-spec :family "Monospace" :size 9.0)))
 
-(defvar default-font-spec-eng-mac-list '((font-spec :family "Andale Mono" :size 12.0)
-                                         (font-spec :family "Ubuntu Mono" :size 13.0)
+(defvar default-font-spec-eng-mac-list '((font-spec :family "Ubuntu Mono" :size 13.0)
+                                         (font-spec :family "Andale Mono" :size 12.0)
                                          (font-spec :family "Menlo" :size 12.0)
                                          (font-spec :family "Monaco" :size 12.0)
                                          (font-spec :family "Courier New" :size 12.0)))
@@ -90,7 +91,7 @@
    '(font-lock-preprocessor-face ((t (:foreground "magenta"))))
    '(font-lock-string-face ((t (:foreground "red"))))
    '(font-lock-type-face ((t (:foreground "green"))))
-   '(font-lock-variable-name-face ((t (:foreground "gray70"))))
+   '(font-lock-variable-name-face ((t (:foreground "tomato"))))
    '(fringe ((nil)))
    '(hi-blue ((t (:background "blue"))))
    '(highlight ((t (:background "#ffffd7"))))
@@ -180,7 +181,7 @@
    '(font-lock-preprocessor-face ((t (:foreground "magenta"))))
    '(font-lock-string-face ((t (:foreground "red"))))
    '(font-lock-type-face ((t (:foreground "green"))))
-   '(font-lock-variable-name-face ((t (:foreground "gray"))))
+   '(font-lock-variable-name-face ((t (:foreground "brightred"))))
    '(hi-blue ((t (:background "blue"))))
    '(highlight ((t (:background "#ffffd7"))))
    '(isearch ((t (:background "green" :foreground "black"))))

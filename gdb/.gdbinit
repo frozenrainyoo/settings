@@ -1,5 +1,8 @@
 # set disassembly-flavor intel
 set print pretty on
+set history save
+set history filename ~/.gdb_history
+# set target-wide-charset UTF-16
 
 define pr
   if $argc == 1
@@ -91,4 +94,12 @@ end
 
 document bprestore
 restore breakpoints saved by bpsave
+end
+
+define init-peda
+  source ~/settings/gdb/peda/peda.py
+end
+
+document init-peda
+initialize PEDA(Python Exploit Development Assistant for GDB)
 end
